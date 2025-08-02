@@ -1,4 +1,4 @@
-name: Python Package
+name: Build and Test
 
 on:
   push:
@@ -31,6 +31,7 @@ jobs:
       - name: Run tests
         run: |
           ruff format --check
+          pytest
 
       - name: Upload coverage to Coveralls
         if: success()
