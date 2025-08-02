@@ -19,13 +19,13 @@ async def local() -> None:
 
     print("Testing Inteno connection...")
     print("Listing devices connected to Inteno router:")
-    pprint.pprint(
-        await Inteno(
-            url=ROUTER_URL,
-            username=USERNAME,
-            password=PASSWORD,
-        ).list_devices()
+    device = Inteno(
+        url=ROUTER_URL,
+        username=USERNAME,
+        password=PASSWORD,
     )
+    await device.ensure_logged_in()
+    pprint.pprint(await device.list_devices())
 
 
 if __name__ == "__main__":

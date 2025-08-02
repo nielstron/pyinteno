@@ -298,7 +298,6 @@ class Inteno:
         )
         devices: dict[str, dict] = await self._rcv_rpc()
         _LOGGER.debug("Received devices: %s", devices)
-        print(devices)
         devices_parsed = {
             key: inteno_device_from_dict(value) for key, value in devices.items()
         }
