@@ -12,7 +12,6 @@ PASSWORD = os.environ.get("PASSWORD")
 async def local() -> None:
     """
     Placeholder test function for local testing.
-    This function is intended to be run locally to ensure that the environment is set up correctly.
     """
     assert ROUTER_URL is not None, "ROUTER_URL environment variable is not set"
     assert USERNAME is not None, "USERNAME environment variable is not set"
