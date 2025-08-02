@@ -1,6 +1,6 @@
 # PyInteno - a very basic Inteno python bridge
-[![Build Status](https://app.travis-ci.com/nielstron/pyinteno.svg?branch=master)](https://app.travis-ci.com/nielstron/pyinteno)
-[![Coverage Status](https://coveralls.io/repos/github/nielstron/pyinteno/badge.svg?branch=master)](https://coveralls.io/github/nielstron/pyinteno?branch=master)
+[![Build and Test](https://github.com/nielstron/pyinteno/actions/workflows/build.yml/badge.svg)](https://github.com/nielstron/pyinteno/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/nielstron/pyinteno/badge.svg?branch=main)](https://coveralls.io/github/nielstron/pyinteno?branch=master)
  [![PyPI version](https://badge.fury.io/py/PyInteno.svg)](https://pypi.org/project/pyinteno/)
  ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyInteno.svg)
  [![PyPI - Status](https://img.shields.io/pypi/status/PyInteno.svg)](https://pypi.org/project/pyinteno/)
