@@ -253,19 +253,32 @@ class Inteno:
         """
         Log out from the Inteno device and close the connection
         """
-        if self._session_token is not None:
-            await self._disconnect()
+        await self._disconnect()
+        self._session_token = None
+        self._expires = None
+        self._timeout = None
+        _LOGGER.debug("Logged out from Inteno device at %s", self.url)
 
-    async def ensure_logged_in(self) -> None:
+    def logged_in(self) -> bool:
+        """
+        Check if the Inteno device is logged in.
+        Returns True if logged in, False otherwise.
+        """
+        return (
+            self._session_token is not None
+            and self._expires is not None
+            and self._timeout is not None
+        )
+
+    async def ensure_logged_in(self, force_reconnect: bool = False) -> None:
         """
         Ensure that the Inteno device is logged in.
         If not, it will log in.
         """
-        if (
-            self._session_token is None
-            or self._expires is None
-            or self._timeout is None
-        ):
+        if force_reconnect:
+            _LOGGER.debug("Forcing re-login to Inteno device")
+            await self._logout()
+        if not self.logged_in():
             await self._login()
         else:
             _LOGGER.debug(
