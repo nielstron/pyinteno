@@ -166,6 +166,8 @@ class Inteno:
                     raise InvalidAnswerError(f"Error in response: {data['error']}")
                 if "result" not in data:
                     raise InvalidAnswerError("No result in response")
+                if len(data["result"]) < 2:
+                    raise InvalidAnswerError("Result does not contain expected data")
                 data = data["result"][1]
                 return data
         except websockets.ConnectionClosed as e:
