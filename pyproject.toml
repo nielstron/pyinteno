@@ -27,7 +27,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Object Brokering",
 ]
-dependencies = ["aiohttp"]
+dependencies = ["websockets"]
 requires-python = ">=3.8.0"
 
 [project.urls]
