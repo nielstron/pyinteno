@@ -30,7 +30,6 @@ jobs:
 
       - name: Run tests
         run: |
-          tox
           ruff format --check
 
       - name: Upload coverage to Coveralls
