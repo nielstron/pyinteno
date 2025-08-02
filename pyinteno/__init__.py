@@ -1,17 +1,17 @@
 """
-Created on 27.09.2017
-
 @author: Niels
-@author: Gerrit Beine
 """
+
 import json
 import logging
-from typing import Any, Callable, Dict, Final, Iterable, List, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union
 
 import websockets.asyncio.client
 from websockets.asyncio.client import ClientConnection
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class IntenoError(Exception):
     """
@@ -52,11 +52,60 @@ class BadStatusError(IntenoError):
         """Instantiate exception."""
         self.response = response
         message = (
-            f"BadStatusError at {endpoint}. "
-            f"Code: {code}"
-            f"Reason: {reason or 'unknown'}."
+            f"BadStatusError at {endpoint}. Code: {code}Reason: {reason or 'unknown'}."
         )
         super().__init__(message)
+
+
+@dataclass
+class IntenoDevice:
+    hostname: str
+    ipaddr: str
+    macaddr: str
+    network: str
+    device: str
+    dhcp: bool
+    connected: bool
+    wireless: bool
+    # Only present when connected is True
+    active_connections: int = None
+
+
+@dataclass
+class WiredIntenoDevice(IntenoDevice):
+    ethport: str = None
+    linkspeed: str = None
+
+
+@dataclass
+class WirelessIntenoDevice(IntenoDevice):
+    wdev: str = None
+    frequency: str = None
+    rssi: int = None
+    snr: int = None
+    idle: int = None
+    in_network: int = None
+    wme: bool = None
+    ps: bool = None
+    n_cap: bool = None
+    vht_cap: bool = None
+    tx_bytes: int = None
+    rx_bytes: int = None
+    tx_rate: int = None
+    rx_rate: int = None
+
+
+def inteno_device_from_dict(
+    data: Dict[str, Any],
+) -> Union[WiredIntenoDevice, WirelessIntenoDevice]:
+    """
+    Create an Inteno device object from a dictionary.
+    The dictionary should contain the keys as defined in the dataclasses.
+    """
+    if data["wireless"]:
+        return WirelessIntenoDevice(**data)
+    else:
+        return WiredIntenoDevice(**data)
 
 
 class Inteno:
@@ -94,20 +143,15 @@ class Inteno:
         self._expires: Union[str, None] = None
         self._timeout: Union[str, None] = None
 
-    async def _send_rpc_with_id(self, method: str, params: List[Any], id:int) -> None:
-        msg = {
-            "jsonrpc": "2.0",
-            "id": id,
-            "method": method,
-            "params": params
-        }
+    async def _send_rpc_with_id(self, method: str, params: List[Any], id: int) -> None:
+        msg = {"jsonrpc": "2.0", "id": id, "method": method, "params": params}
         await self.connection.send(json.dumps(msg))
 
     async def _send_rpc(self, method: str, params: List[Any]) -> None:
         self._session_id += 1
         await self._send_rpc_with_id(method, params, self._session_id)
 
-    async def _rcv_rpc_with_id(self, id:int) -> Dict[str, Any]:
+    async def _rcv_rpc_with_id(self, id: int) -> Dict[str, Any]:
         """
         Receive a JSON-RPC message from the Inteno device
         Skips messages that do not match the given id.
@@ -136,7 +180,6 @@ class Inteno:
         """
         return await self._rcv_rpc_with_id(self._session_id)
 
-
     @property
     def connection(self) -> ClientConnection:
         """
@@ -144,9 +187,10 @@ class Inteno:
         If no connection exists, it will create a new one.
         """
         if self._connection is None:
-            raise IntenoConnectionError("No connection established. Please connect first.")
+            raise IntenoConnectionError(
+                "No connection established. Please connect first."
+            )
         return self._connection
-
 
     async def _connect(self) -> None:
         """
@@ -186,17 +230,18 @@ class Inteno:
         await self._connect()
         # request a challenge
         _LOGGER.debug("Requesting challenge from Inteno device")
-        await self._send_rpc(    # Step 1: Request challenge
-    "call",
-      params= [
-        "00000000000000000000000000000000",
-        "session",
-        "login",
-        {
-          "username": self.username,
-          "password": self.password,
-        }
-      ])
+        await self._send_rpc(  # Step 1: Request challenge
+            "call",
+            params=[
+                "00000000000000000000000000000000",
+                "session",
+                "login",
+                {
+                    "username": self.username,
+                    "password": self.password,
+                },
+            ],
+        )
         data = await self._rcv_rpc()
         self._session_token = data["ubus_rpc_session"]
         self._expires = data["expires"]
@@ -214,27 +259,32 @@ class Inteno:
         Ensure that the Inteno device is logged in.
         If not, it will log in.
         """
-        if self._session_token is None or self._expires is None or self._timeout is None:
+        if (
+            self._session_token is None
+            or self._expires is None
+            or self._timeout is None
+        ):
             await self._login()
         else:
-            _LOGGER.debug("Already logged in with session token: %s", self._session_token)
+            _LOGGER.debug(
+                "Already logged in with session token: %s", self._session_token
+            )
 
-    async def list_devices(self) -> Dict[str, Any]:
+    async def list_devices(self) -> Dict[str, IntenoDevice]:
         """
         List all devices connected to the Inteno device.
         Returns a list of dictionaries containing device information.
         """
         await self.ensure_logged_in()
         _LOGGER.debug("Listing devices connected to Inteno")
-        result = await self._send_rpc(
+        await self._send_rpc(
             "call",
-            params=[
-                self._session_token,
-                "router.network",
-                "clients",
-                {}
-            ],
+            params=[self._session_token, "router.network", "clients", {}],
         )
-        return await self._rcv_rpc()
-
-
+        devices: dict[str, dict] = await self._rcv_rpc()
+        _LOGGER.debug("Received devices: %s", devices)
+        print(devices)
+        devices_parsed = {
+            key: inteno_device_from_dict(value) for key, value in devices.items()
+        }
+        return devices_parsed

@@ -26,14 +26,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install coverage coveralls
-          python -m pip install -r dev-requirements.txt
-          python -m pip install -e .
+          python -m pip install -e .[dev]
 
       - name: Run tests
         run: |
           tox
-          python tests/test_import.py
-          coverage run --source=pyinteno --module pytest
+          ruff format --check
 
       - name: Upload coverage to Coveralls
         if: success()

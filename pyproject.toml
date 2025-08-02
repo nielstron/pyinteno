@@ -4,15 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyInteno"
-version = "0.8.0"
+version = "0.0.1"
 authors = [
     { name = "Niels Mündler", email = "n.muendler@web.de" },
-    { name = "Matthias Alphart", email = "farmio@alphart.net" },
-    { name = "Gerrit Beine", email = "mail@gerritbeine.de" },
 ]
 description = "Client for Inteno SolarAPI JSON interface"
 license = { text = "MIT" }
-keywords = ["Inteno", "SolarAPI", "photovoltaics", "pv"]
+keywords = ["Inteno", "Home Automation", "WebSocket", "Internet Router"]
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3.8",
@@ -35,3 +33,10 @@ Repository = "https://github.com/nielstron/pyinteno/"
 
 [tool.setuptools.packages.find]
 include = ["pyinteno*"]
+
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "ruff",
+    "pytest",
+]
