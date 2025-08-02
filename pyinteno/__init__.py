@@ -5,6 +5,7 @@
 import json
 import logging
 from dataclasses import dataclass
+from datetime import timedelta, datetime
 from typing import Any, Dict, List, Union
 
 import websockets.asyncio.client
@@ -266,8 +267,8 @@ class Inteno:
         self._session_id = 0
         self._connection: Union[ClientConnection, None] = None
         self._session_token: Union[str, None] = None
-        self._expires: Union[str, None] = None
-        self._timeout: Union[str, None] = None
+        self._expires: Union[datetime, None] = None
+        self._timeout: Union[datetime, None] = None
 
     async def _send_rpc_with_id(self, method: str, params: List[Any], id: int) -> None:
         msg = {"jsonrpc": "2.0", "id": id, "method": method, "params": params}
@@ -367,13 +368,14 @@ class Inteno:
                 {
                     "username": self.username,
                     "password": self.password,
+                    "timeout": 20,  # times out after 20 seconds
                 },
             ],
         )
         data = await self._rcv_rpc()
         self._session_token = data["ubus_rpc_session"]
-        self._expires = data["expires"]
-        self._timeout = data["timeout"]
+        self._expires = datetime.now() + timedelta(seconds=data["expires"])
+        self._timeout = datetime.now() + timedelta(seconds=data["timeout"])
 
     async def _logout(self) -> None:
         """
@@ -393,7 +395,9 @@ class Inteno:
         return (
             self._session_token is not None
             and self._expires is not None
+            and self._expires > datetime.now()
             and self._timeout is not None
+            and self._timeout > datetime.now()
         )
 
     async def ensure_logged_in(self, force_reconnect: bool = False) -> None:
