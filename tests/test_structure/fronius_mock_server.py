@@ -14,7 +14,7 @@ from pathlib import Path
 SERVER_DIR = Path(__file__).parent or Path(".")
 
 
-class FroniusServer(HTTPServer):
+class IntenoServer(HTTPServer):
     def __init__(
         self,
         server_address: Tuple[str, int],
@@ -25,8 +25,8 @@ class FroniusServer(HTTPServer):
         self.api_version = api_version
 
 
-class FroniusRequestHandler(SimpleHTTPRequestHandler):
-    server: FroniusServer
+class IntenoRequestHandler(SimpleHTTPRequestHandler):
+    server: IntenoServer
 
     def translate_path(self, path):
         """Translate a /-separated PATH to the local filename syntax.
@@ -38,7 +38,7 @@ class FroniusRequestHandler(SimpleHTTPRequestHandler):
         only slightly changed method of the standard library
         """
         # abandon query parameters
-        # path = path.split('?',1)[0] -> Keep them for fronius as name of file
+        # path = path.split('?',1)[0] -> Keep them for inteno as name of file
         path = path.split("#", 1)[0]
         # Don't forget explicit trailing slash when normalizing. Issue17324
         trailing_slash = path.rstrip().endswith("/")
@@ -84,7 +84,7 @@ class FroniusRequestHandler(SimpleHTTPRequestHandler):
         ):
             # HTML encode to prevent Cross Site Scripting attacks
             # (see bug #1100201)
-            # Specialized error method for fronius
+            # Specialized error method for inteno
             with (
                 SERVER_DIR.joinpath("v{}".format(self.server.api_version))
                 .joinpath(".error.html")

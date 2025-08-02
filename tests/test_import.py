@@ -1,4 +1,4 @@
-# Tests importing from pyfronius
+# Tests importing from pyinteno
 # uncovering any import failures hidden by coverage
 
-from pyfronius import Fronius  # noqa: F401
+from pyinteno import Inteno  # noqa: F401

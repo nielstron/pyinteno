@@ -21,7 +21,7 @@ GET_METER_REALTIME_DATA_SYSTEM = {
             "meter_location": {"value": 1},
             "enable": {"value": 1},
             "visible": {"value": 1},
-            "manufacturer": {"value": "Fronius"},
+            "manufacturer": {"value": "Inteno"},
             "model": {"value": ""},
             "serial": {"value": ""},
         }
@@ -35,7 +35,7 @@ GET_METER_REALTIME_DATA_SCOPE_DEVICE = {
     "meter_location": {"value": 1},
     "enable": {"value": 1},
     "visible": {"value": 1},
-    "manufacturer": {"value": "Fronius"},
+    "manufacturer": {"value": "Inteno"},
     "model": {"value": ""},
     "serial": {"value": ""},
 }
@@ -128,7 +128,7 @@ GET_OHMPILOT_REALTIME_DATA_SYSTEM = {
             "state_code": {"value": 0},
             "state_message": {"value": "Up and running"},
             "hardware": {"value": "3"},
-            "manufacturer": {"value": "Fronius"},
+            "manufacturer": {"value": "Inteno"},
             "model": {"value": "Ohmpilot"},
             "serial": {"value": "28136344"},
             "software": {"value": "1.0.19-1"},
@@ -168,7 +168,7 @@ GET_LOGGER_INFO = {
     "hardware_version": {"value": "2.4E"},
     "software_version": {"value": "3.18.7-1"},
     "hardware_platform": {"value": "wilma"},
-    "product_type": {"value": "fronius-datamanager-card"},
+    "product_type": {"value": "inteno-datamanager-card"},
     "time_zone_location": {"value": "Vienna"},
     "time_zone": {"value": "CEST"},
     "utc_offset": {"value": 7200},
@@ -184,7 +184,7 @@ GET_INVERTER_INFO = {
             "custom_name": {"value": "Primo 8.2-1 ("},
             "device_type": {
                 "value": 102,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "Primo 8.2-1",
             },
             "error_code": {"value": 0},
@@ -201,7 +201,7 @@ GET_INVERTER_INFO = {
             "custom_name": {"value": "Primo 5.0-1 20"},
             "device_type": {
                 "value": 86,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "Primo 5.0-1 208-240",
             },
             "error_code": {"value": 0},
@@ -218,7 +218,7 @@ GET_INVERTER_INFO = {
             "custom_name": {"value": "Galvo 3.1-1 20"},
             "device_type": {
                 "value": 106,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "Galvo 3.1-1 208-240",
             },
             "error_code": {"value": 0},
@@ -235,7 +235,7 @@ GET_INVERTER_INFO = {
             "custom_name": {"value": "Galvo 3.0-1 (5"},
             "device_type": {
                 "value": 224,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "Galvo 3.0-1",
             },
             "error_code": {"value": 0},
@@ -252,7 +252,7 @@ GET_INVERTER_INFO = {
             "custom_name": {"value": "tr-3pn-01"},
             "device_type": {
                 "value": 1,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "Gen24",
             },
             "pv_power": {

@@ -33,7 +33,7 @@ jobs:
         run: |
           tox
           python tests/test_import.py
-          coverage run --source=pyfronius --module pytest
+          coverage run --source=pyinteno --module pytest
 
       - name: Upload coverage to Coveralls
         if: success()

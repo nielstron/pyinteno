@@ -52,7 +52,7 @@ GET_INVERTER_INFO = {
             "device_id": {"value": "1"},
             "device_type": {
                 "value": 192,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "IG TL 5.0",
             },
             "pv_power": {
@@ -67,7 +67,7 @@ GET_INVERTER_INFO = {
             "device_id": {"value": "2"},
             "device_type": {
                 "value": 192,
-                "manufacturer": "Fronius",
+                "manufacturer": "Inteno",
                 "model": "IG TL 5.0",
             },
             "pv_power": {

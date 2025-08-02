@@ -121,33 +121,33 @@ HEADER_STATUS_CODES: Final = {
 }
 
 
-class FroniusError(Exception):
+class IntenoError(Exception):
     """
     A superclass that covers all errors occuring during the
-    connection to a Fronius device
+    connection to a Inteno device
     """
 
 
-class NotSupportedError(ValueError, FroniusError):
+class NotSupportedError(ValueError, IntenoError):
     """
     An error to be raised if a specific feature
     is not supported by the specified device
     """
 
 
-class FroniusConnectionError(ConnectionError, FroniusError):
+class IntenoConnectionError(ConnectionError, IntenoError):
     """
-    An error to be raised if the connection to the fronius device failed
-    """
-
-
-class InvalidAnswerError(ValueError, FroniusError):
-    """
-    An error to be raised if the host Fronius device could not answer a request
+    An error to be raised if the connection to the inteno device failed
     """
 
 
-class BadStatusError(FroniusError):
+class InvalidAnswerError(ValueError, IntenoError):
+    """
+    An error to be raised if the host Inteno device could not answer a request
+    """
+
+
+class BadStatusError(IntenoError):
     """A bad status code was returned."""
 
     def __init__(
@@ -167,15 +167,15 @@ class BadStatusError(FroniusError):
         super().__init__(message)
 
 
-class Fronius:
+class Inteno:
     """
-    Interface to communicate with the Fronius Symo over http / JSON
+    Interface to communicate with the Inteno Symo over http / JSON
     Timeouts are to be set in the given AIO session
     Attributes:
         session     The AIO session
-        url         The url for reaching of the Fronius device
+        url         The url for reaching of the Inteno device
                     (i.e. http://192.168.0.10:80)
-        api_version  Version of Fronius API to use
+        api_version  Version of Inteno API to use
     """
 
     def __init__(
@@ -191,7 +191,7 @@ class Fronius:
         while url[-1] == "/":
             url = url[:-1]
         self.url = url
-        # prepend http:// if missing, by fronius API this is the only supported protocol
+        # prepend http:// if missing, by inteno API this is the only supported protocol
         if not self.url.startswith("http"):
             self.url = "http://{}".format(self.url)
         self.api_version = api_version
@@ -206,12 +206,12 @@ class Fronius:
             async with self._aio_session.get(url) as res:
                 result = await res.json(content_type=None)
         except asyncio.TimeoutError:
-            raise FroniusConnectionError(
-                "Connection to Fronius device timed out at {}.".format(url)
+            raise IntenoConnectionError(
+                "Connection to Inteno device timed out at {}.".format(url)
             )
         except aiohttp.ClientError:
-            raise FroniusConnectionError(
-                "Connection to Fronius device failed at {}.".format(url)
+            raise IntenoConnectionError(
+                "Connection to Inteno device failed at {}.".format(url)
             )
         except (aiohttp.ContentTypeError, json.decoder.JSONDecodeError):
             raise InvalidAnswerError(
@@ -221,7 +221,7 @@ class Fronius:
 
     async def fetch_api_version(self) -> Tuple[API_VERSION, str]:
         """
-        Fetches the highest supported API version of the initiated fronius device
+        Fetches the highest supported API version of the initiated inteno device
         :return:
         """
         try:
@@ -284,7 +284,7 @@ class Fronius:
         system_ohmpilot: bool = True,
         system_storage: bool = True,
         device_meter: Iterable[str] = frozenset(["0"]),
-        # storage is not necessarily supported by every fronius device
+        # storage is not necessarily supported by every inteno device
         device_storage: Iterable[str] = frozenset(["0"]),
         device_inverter: Iterable[str] = frozenset(["1"]),
     ) -> List[Dict[str, Any]]:
@@ -317,7 +317,7 @@ class Fronius:
         res = await asyncio.gather(*requests, return_exceptions=True)
         responses = []
         for result in res:
-            if isinstance(result, (FroniusError, BaseException)):
+            if isinstance(result, (IntenoError, BaseException)):
                 _LOGGER.warning(result)
                 if isinstance(result, BadStatusError):
                     responses.append(result.response)
@@ -363,11 +363,11 @@ class Fronius:
         except InvalidAnswerError:
             # except if Host returns 404
             raise NotSupportedError(
-                "Device type {} not supported by the fronius device".format(spec_name)
+                "Device type {} not supported by the inteno device".format(spec_name)
             )
 
         try:
-            sensor.update(Fronius._status_data(res))
+            sensor.update(Inteno._status_data(res))
         except (TypeError, KeyError):
             raise InvalidAnswerError(
                 "No header data returned from {} ({})".format(spec, spec_formattings)
@@ -395,7 +395,7 @@ class Fronius:
         Get the current power flow of a smart meter system.
         """
         return await self._current_data(
-            Fronius._system_power_flow, URL_POWER_FLOW, "current power flow"
+            Inteno._system_power_flow, URL_POWER_FLOW, "current power flow"
         )
 
     async def current_system_meter_data(self) -> Dict[str, Any]:
@@ -403,7 +403,7 @@ class Fronius:
         Get the current meter data.
         """
         return await self._current_data(
-            Fronius._system_meter_data, URL_SYSTEM_METER, "current system meter"
+            Inteno._system_meter_data, URL_SYSTEM_METER, "current system meter"
         )
 
     async def current_system_inverter_data(self) -> Dict[str, Any]:
@@ -412,7 +412,7 @@ class Fronius:
         The values are provided as cumulated values and for each inverter
         """
         return await self._current_data(
-            Fronius._system_inverter_data,
+            Inteno._system_inverter_data,
             URL_SYSTEM_INVERTER,
             "current system inverter",
         )
@@ -422,7 +422,7 @@ class Fronius:
         Get the current ohmpilot data.
         """
         return await self._current_data(
-            Fronius._system_ohmpilot_data,
+            Inteno._system_ohmpilot_data,
             URL_SYSTEM_OHMPILOT,
             "current system ohmpilot",
         )
@@ -432,7 +432,7 @@ class Fronius:
         Get the current meter data for a device.
         """
         return await self._current_data(
-            Fronius._device_meter_data, URL_DEVICE_METER, "current meter", device
+            Inteno._device_meter_data, URL_DEVICE_METER, "current meter", device
         )
 
     async def current_storage_data(self, device: str = "0") -> Dict[str, Any]:
@@ -441,7 +441,7 @@ class Fronius:
         Provides data about batteries.
         """
         return await self._current_data(
-            Fronius._device_storage_data, URL_DEVICE_STORAGE, "current storage", device
+            Inteno._device_storage_data, URL_DEVICE_STORAGE, "current storage", device
         )
 
     async def current_system_storage_data(self) -> Dict[str, Any]:
@@ -450,7 +450,7 @@ class Fronius:
         Provides data about batteries.
         """
         return await self._current_data(
-            Fronius._system_storage_data, URL_SYSTEM_STORAGE, "current system storage"
+            Inteno._system_storage_data, URL_SYSTEM_STORAGE, "current system storage"
         )
 
     async def current_inverter_data(self, device: str = "1") -> Dict[str, Any]:
@@ -458,7 +458,7 @@ class Fronius:
         Get the current inverter data of one device.
         """
         return await self._current_data(
-            Fronius._device_inverter_data,
+            Inteno._device_inverter_data,
             URL_DEVICE_INVERTER_COMMON,
             "current inverter",
             device,
@@ -469,7 +469,7 @@ class Fronius:
         Get the current inverter 3 phase data of one device.
         """
         return await self._current_data(
-            Fronius._device_inverter_3p_data,
+            Inteno._device_inverter_3p_data,
             URL_DEVICE_INVERTER_3P,
             "current inverter 3p",
             device,
@@ -480,7 +480,7 @@ class Fronius:
         Get the current info led data for all LEDs
         """
         return await self._current_data(
-            Fronius._system_led_data, URL_SYSTEM_LED, "current led"
+            Inteno._system_led_data, URL_SYSTEM_LED, "current led"
         )
 
     async def current_active_device_info(self) -> Dict[str, Any]:
@@ -488,7 +488,7 @@ class Fronius:
         Get info about the current active devices in a smart meter system.
         """
         return await self._current_data(
-            Fronius._system_active_device_info,
+            Inteno._system_active_device_info,
             URL_ACTIVE_DEVICE_INFO_SYSTEM,
             "current active device info",
         )
@@ -498,7 +498,7 @@ class Fronius:
         Get the current logger info of a smart meter system.
         """
         return await self._current_data(
-            Fronius._logger_info, URL_LOGGER_INFO, "current logger info"
+            Inteno._logger_info, URL_LOGGER_INFO, "current logger info"
         )
 
     async def inverter_info(self) -> Dict[str, Any]:
@@ -506,7 +506,7 @@ class Fronius:
         Get the general infos of an inverter.
         """
         return await self._current_data(
-            Fronius._inverter_info, URL_INVERTER_INFO, "inverter info"
+            Inteno._inverter_info, URL_INVERTER_INFO, "inverter info"
         )
 
     @staticmethod
@@ -597,7 +597,7 @@ class Fronius:
         sensor: Dict[str, Dict[str, Dict[str, Any]]] = {"meters": {}}
 
         for device_id, device_data in data.items():
-            sensor["meters"][device_id] = Fronius._device_meter_data(device_data)
+            sensor["meters"][device_id] = Inteno._device_meter_data(device_data)
 
         return sensor
 
@@ -694,7 +694,7 @@ class Fronius:
         sensor: Dict[str, Dict[str, Dict[str, Any]]] = {"ohmpilots": {}}
 
         for device_id, device_data in data.items():
-            sensor["ohmpilots"][device_id] = Fronius._device_ohmpilot_data(device_data)
+            sensor["ohmpilots"][device_id] = Inteno._device_ohmpilot_data(device_data)
 
         return sensor
 
@@ -914,7 +914,7 @@ class Fronius:
         sensor = {}
 
         if "Controller" in data:
-            controller = Fronius._controller_data(data["Controller"])
+            controller = Inteno._controller_data(data["Controller"])
             sensor.update(controller)
 
         if "Modules" in data:
@@ -922,7 +922,7 @@ class Fronius:
             module_count = 0
 
             for module in data["Modules"]:
-                sensor["modules"][module_count] = Fronius._module_data(module)
+                sensor["modules"][module_count] = Inteno._module_data(module)
                 module_count += 1
 
         return sensor
@@ -934,7 +934,7 @@ class Fronius:
         sensor: Dict[str, Dict[str, Dict[str, Any]]] = {"storages": {}}
 
         for device_id, device_data in data.items():
-            sensor["storages"][device_id] = Fronius._device_storage_data(device_data)
+            sensor["storages"][device_id] = Inteno._device_storage_data(device_data)
 
         return sensor
 

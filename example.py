@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Basic usage example and testing of pyfronius."""
+"""Basic usage example and testing of pyinteno."""
 
 import asyncio
 import logging
@@ -7,18 +7,18 @@ import json
 import sys
 import aiohttp
 
-import pyfronius
+import pyinteno
 
 
 async def main(loop, host):
     timeout = aiohttp.ClientTimeout(total=10)
     async with aiohttp.ClientSession(loop=loop, timeout=timeout) as session:
-        fronius = pyfronius.Fronius(session, host)
+        inteno = pyinteno.Inteno(session, host)
 
         # use the optional fetch parameters to configure
         # which endpoints are acessed
         # NOTE: configuring the wrong devices may cause Exceptions to be thrown
-        res = await fronius.fetch(
+        res = await inteno.fetch(
             active_device_info=True,
             inverter_info=True,
             logger_info=True,
@@ -28,7 +28,7 @@ async def main(loop, host):
             system_ohmpilot=True,
             system_storage=True,
             device_meter=["0"],
-            # storage is not necessarily supported by every fronius device
+            # storage is not necessarily supported by every inteno device
             device_storage=["0"],
             device_inverter=["1"],
         )

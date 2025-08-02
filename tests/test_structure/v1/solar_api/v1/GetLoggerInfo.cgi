@@ -9,7 +9,7 @@
          "DeliveryFactor" : 0.15000000596046448,
          "HWVersion" : "2.4E",
          "PlatformID" : "wilma",
-         "ProductID" : "fronius-datamanager-card",
+         "ProductID" : "inteno-datamanager-card",
          "SWVersion" : "3.18.7-1",
          "TimezoneLocation" : "Vienna",
          "TimezoneName" : "CEST",

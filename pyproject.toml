@@ -3,16 +3,16 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "PyFronius"
+name = "PyInteno"
 version = "0.8.0"
 authors = [
     { name = "Niels Mündler", email = "n.muendler@web.de" },
     { name = "Matthias Alphart", email = "farmio@alphart.net" },
     { name = "Gerrit Beine", email = "mail@gerritbeine.de" },
 ]
-description = "Client for Fronius SolarAPI JSON interface"
+description = "Client for Inteno SolarAPI JSON interface"
 license = { text = "MIT" }
-keywords = ["Fronius", "SolarAPI", "photovoltaics", "pv"]
+keywords = ["Inteno", "SolarAPI", "photovoltaics", "pv"]
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3.8",
@@ -31,7 +31,7 @@ dependencies = ["aiohttp"]
 requires-python = ">=3.8.0"
 
 [project.urls]
-Repository = "https://github.com/nielstron/pyfronius/"
+Repository = "https://github.com/nielstron/pyinteno/"
 
 [tool.setuptools.packages.find]
-include = ["pyfronius*"]
+include = ["pyinteno*"]

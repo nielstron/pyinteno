@@ -7,7 +7,7 @@ import unittest
 
 from tests.util import AsyncTestCaseSetup
 from .test_structure.server_control import Server
-from .test_structure.fronius_mock_server import FroniusRequestHandler, FroniusServer
+from .test_structure.inteno_mock_server import IntenoRequestHandler, IntenoServer
 from http.server import SimpleHTTPRequestHandler
 
 # For the server in this case
@@ -15,7 +15,7 @@ import time
 
 # For the tests
 import aiohttp
-import pyfronius
+import pyinteno
 from tests.web_raw.v1.web_state import (
     GET_ACTIVE_DEVICE_INFO,
     GET_INVERTER_REALTIME_DATA_SYSTEM,
@@ -35,22 +35,22 @@ from tests.web_raw.v1.web_state import (
 ADDRESS = "localhost"
 
 
-class NoFroniusWebTest(AsyncTestCaseSetup):
+class NoIntenoWebTest(AsyncTestCaseSetup):
     server = None
-    api_version = pyfronius.API_VERSION.V1
+    api_version = pyinteno.API_VERSION.V1
     server_control = None
     port = 0
     url = "http://localhost:80"
     session = None
-    fronius = None
+    inteno = None
 
     async def test_no_server(self):
-        # set up a fronius client and aiohttp session
+        # set up a inteno client and aiohttp session
         self.session = aiohttp.ClientSession()
-        self.fronius = pyfronius.Fronius(self.session, self.url, self.api_version)
+        self.inteno = pyinteno.Inteno(self.session, self.url, self.api_version)
         try:
-            await self.fronius.current_system_meter_data()
-            self.fail("No Exception for failed connection to fronius")
+            await self.inteno.current_system_meter_data()
+            self.fail("No Exception for failed connection to inteno")
         except ConnectionError:
             pass
         finally:
@@ -65,7 +65,7 @@ class NoFroniusWebTest(AsyncTestCaseSetup):
         while not self.server:
             try:
                 # Connect to any open port
-                self.server = FroniusServer(
+                self.server = IntenoServer(
                     (ADDRESS, 0), handler, self.api_version.value
                 )
             except OSError:
@@ -80,39 +80,39 @@ class NoFroniusWebTest(AsyncTestCaseSetup):
         self.url = "http://{}:{}".format(ADDRESS, self.port)
         # Start test server before running any tests
         self.server_control.start_server()
-        # set up a fronius client and aiohttp session
+        # set up a inteno client and aiohttp session
         self.session = aiohttp.ClientSession()
-        self.fronius = pyfronius.Fronius(self.session, self.url)
+        self.inteno = pyinteno.Inteno(self.session, self.url)
         try:
-            await self.fronius.current_system_inverter_data()
+            await self.inteno.current_system_inverter_data()
             self.fail("No Exception for wrong reply by host")
-        except pyfronius.NotSupportedError:
+        except pyinteno.NotSupportedError:
             pass
         finally:
             await self.session.close()
 
 
-class FroniusWebDetectVersionV1(AsyncTestCaseSetup):
+class IntenoWebDetectVersionV1(AsyncTestCaseSetup):
     server = None
-    api_version = pyfronius.API_VERSION.V1
+    api_version = pyinteno.API_VERSION.V1
     server_control = None
     port = 0
     url = "http://localhost:80"
     session = None
-    fronius = None
+    inteno = None
 
     async def setUp(self):
         # Create an arbitrary subclass of TCP Server as the server to be
         # started
         # Here, it is an Simple HTTP file serving server
-        handler = FroniusRequestHandler
+        handler = IntenoRequestHandler
 
         max_retries = 10
         r = 0
         while not self.server:
             try:
                 # Connect to any open port
-                self.server = FroniusServer(
+                self.server = IntenoServer(
                     (ADDRESS, 0), handler, self.api_version.value
                 )
             except OSError:
@@ -127,38 +127,38 @@ class FroniusWebDetectVersionV1(AsyncTestCaseSetup):
         self.url = "http://{}:{}".format(ADDRESS, self.port)
         # Start test server before running any tests
         self.server_control.start_server()
-        # set up a fronius client and aiohttp session
+        # set up a inteno client and aiohttp session
         self.session = aiohttp.ClientSession()
-        self.fronius = pyfronius.Fronius(self.session, self.url)  # auto api_version
+        self.inteno = pyinteno.Inteno(self.session, self.url)  # auto api_version
 
-    async def test_fronius_get_correct_api_version(self):
+    async def test_inteno_get_correct_api_version(self):
         # fetch any data to check if the correct api_version is retreived
-        res = await self.fronius.current_inverter_data()
+        res = await self.inteno.current_inverter_data()
         self.assertDictEqual(res, GET_INVERTER_REALTIME_DATA_SCOPE_DEVICE)
-        self.assertEqual(self.fronius.api_version, self.api_version)
+        self.assertEqual(self.inteno.api_version, self.api_version)
 
 
-class FroniusWebTestV1(AsyncTestCaseSetup):
+class IntenoWebTestV1(AsyncTestCaseSetup):
     server = None
-    api_version = pyfronius.API_VERSION.V1
+    api_version = pyinteno.API_VERSION.V1
     server_control = None
     port = 0
     url = "http://localhost:80"
     session = None
-    fronius = None
+    inteno = None
 
     async def setUp(self):
         # Create an arbitrary subclass of TCP Server as the server to be
         # started
         # Here, it is an Simple HTTP file serving server
-        handler = FroniusRequestHandler
+        handler = IntenoRequestHandler
 
         max_retries = 10
         r = 0
         while not self.server:
             try:
                 # Connect to any open port
-                self.server = FroniusServer(
+                self.server = IntenoServer(
                     (ADDRESS, 0), handler, self.api_version.value
                 )
             except OSError:
@@ -173,60 +173,60 @@ class FroniusWebTestV1(AsyncTestCaseSetup):
         self.url = "http://{}:{}".format(ADDRESS, self.port)
         # Start test server before running any tests
         self.server_control.start_server()
-        # set up a fronius client and aiohttp session
+        # set up a inteno client and aiohttp session
         self.session = aiohttp.ClientSession()
-        self.fronius = pyfronius.Fronius(self.session, self.url, self.api_version)
+        self.inteno = pyinteno.Inteno(self.session, self.url, self.api_version)
 
-    async def test_fronius_get_meter_realtime_data_system(self):
-        res = await self.fronius.current_system_meter_data()
+    async def test_inteno_get_meter_realtime_data_system(self):
+        res = await self.inteno.current_system_meter_data()
         self.assertDictEqual(res, GET_METER_REALTIME_DATA_SYSTEM)
 
-    async def test_fronius_get_meter_realtime_data_device(self):
-        res = await self.fronius.current_meter_data()
+    async def test_inteno_get_meter_realtime_data_device(self):
+        res = await self.inteno.current_meter_data()
         self.assertDictEqual(res, GET_METER_REALTIME_DATA_SCOPE_DEVICE)
 
-    async def test_fronius_get_power_flow_realtime_data(self):
-        res = await self.fronius.current_power_flow()
+    async def test_inteno_get_power_flow_realtime_data(self):
+        res = await self.inteno.current_power_flow()
         self.assertDictEqual(res, GET_POWER_FLOW_REALTIME_DATA)
 
-    async def test_fronius_get_inverter_realtime_data_device(self):
-        res = await self.fronius.current_inverter_data()
+    async def test_inteno_get_inverter_realtime_data_device(self):
+        res = await self.inteno.current_inverter_data()
         self.assertDictEqual(res, GET_INVERTER_REALTIME_DATA_SCOPE_DEVICE)
 
-    async def test_fronius_get_inverter_realtime_3p_data_device(self):
-        res = await self.fronius.current_inverter_3p_data()
+    async def test_inteno_get_inverter_realtime_3p_data_device(self):
+        res = await self.inteno.current_inverter_3p_data()
         self.assertDictEqual(res, GET_INVERTER_REALTIME_3P_DATA_SCOPE_DEVICE)
 
-    async def test_fronius_get_inverter_realtime_data_system(self):
-        res = await self.fronius.current_system_inverter_data()
+    async def test_inteno_get_inverter_realtime_data_system(self):
+        res = await self.inteno.current_system_inverter_data()
         self.assertDictEqual(res, GET_INVERTER_REALTIME_DATA_SYSTEM)
 
-    async def test_fronius_get_ohmpilot_realtime_data_system(self):
-        res = await self.fronius.current_system_ohmpilot_data()
+    async def test_inteno_get_ohmpilot_realtime_data_system(self):
+        res = await self.inteno.current_system_ohmpilot_data()
         self.assertDictEqual(res, GET_OHMPILOT_REALTIME_DATA_SYSTEM)
 
-    async def test_fronius_get_led_info_data(self):
-        res = await self.fronius.current_led_data()
+    async def test_inteno_get_led_info_data(self):
+        res = await self.inteno.current_led_data()
         self.assertDictEqual(res, GET_LOGGER_LED_INFO_STATE)
 
-    async def test_fronius_get_active_device_info(self):
-        res = await self.fronius.current_active_device_info()
+    async def test_inteno_get_active_device_info(self):
+        res = await self.inteno.current_active_device_info()
         self.assertDictEqual(res, GET_ACTIVE_DEVICE_INFO)
 
-    async def test_fronius_get_logger_info(self):
-        res = await self.fronius.current_logger_info()
+    async def test_inteno_get_logger_info(self):
+        res = await self.inteno.current_logger_info()
         self.assertDictEqual(res, GET_LOGGER_INFO)
 
-    async def test_fronius_get_inverter_info(self):
-        res = await self.fronius.inverter_info()
+    async def test_inteno_get_inverter_info(self):
+        res = await self.inteno.inverter_info()
         self.assertDictEqual(res, GET_INVERTER_INFO)
 
-    async def test_fronius_get_storage_realtime_data_system(self):
-        res = await self.fronius.current_system_storage_data()
+    async def test_inteno_get_storage_realtime_data_system(self):
+        res = await self.inteno.current_system_storage_data()
         self.assertDictEqual(res, GET_STORAGE_REALTIME_DATA_SYSTEM)
 
-    async def test_fronius_fetch(self):
-        res = await self.fronius.fetch(
+    async def test_inteno_fetch(self):
+        res = await self.inteno.fetch(
             active_device_info=True,
             inverter_info=True,
             logger_info=True,
