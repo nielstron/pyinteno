@@ -26,6 +26,7 @@ async def local() -> None:
     )
     await device.ensure_logged_in()
     pprint.pprint(await device.list_devices())
+    pprint.pprint(await device.hardware_info())
 
 
 if __name__ == "__main__":

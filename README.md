@@ -13,6 +13,7 @@ It uses the Inteno Websocket API to fetch data from the device.
 The package supports the following data provided by Inteno devices:
 
 - Device list: A list of devices connected to the Inteno device
+- Hardware Information: Information about the hardware of the Inteno device
 
 That's it for now. I only use it for a home automation project, so I only implemented the features I needed.
 

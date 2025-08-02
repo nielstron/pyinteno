@@ -70,6 +70,17 @@ class IntenoDevice:
     # Only present when connected is True
     active_connections: int = None
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "IntenoDevice":
+        """
+        Create an Inteno device object from a dictionary.
+        The dictionary should contain the keys as defined in the dataclasses.
+        """
+        if data["wireless"]:
+            return WirelessIntenoDevice(**data)
+        else:
+            return WiredIntenoDevice(**data)
+
 
 @dataclass
 class WiredIntenoDevice(IntenoDevice):
@@ -95,17 +106,132 @@ class WirelessIntenoDevice(IntenoDevice):
     rx_rate: int = None
 
 
-def inteno_device_from_dict(
-    data: Dict[str, Any],
-) -> Union[WiredIntenoDevice, WirelessIntenoDevice]:
+@dataclass
+class IntenoInfoKeys:
     """
-    Create an Inteno device object from a dictionary.
-    The dictionary should contain the keys as defined in the dataclasses.
+    A dataclass to hold the keys for the Inteno device information.
     """
-    if data["wireless"]:
-        return WirelessIntenoDevice(**data)
-    else:
-        return WiredIntenoDevice(**data)
+
+    auth: str
+    wpa: str
+
+
+@dataclass
+class IntenoInfoMemory:
+    """
+    A dataclass to hold the memory information of the Inteno device.
+    """
+
+    buffers: int
+    free: int
+    shared: int
+    total: int
+    used: int
+
+
+@dataclass
+class IntenoInfoSpecs:
+    """
+    A dataclass to hold the specifications of the Inteno device.
+    """
+
+    adsl: bool
+    dect: bool
+    eth_ports: int
+    usb: bool
+    vdsl: bool
+    voice: bool
+    voice_ports: int
+    wifi: bool
+
+
+"""
+{'keys': {'auth': 'ZNIEP7EF3PCVN0L1', 'wpa': 'LXP3WQFQXDDZ2X'},
+ 'memoryKB': {'buffers': 0,
+              'free': 262576,
+              'shared': 340,
+              'total': 487988,
+              'used': 225412},
+ 'specs': {'adsl': False,
+           'dect': False,
+           'eth_ports': 5,
+           'usb': True,
+           'vdsl': False,
+           'voice': True,
+           'voice_ports': 6,
+           'wifi': True},
+ 'system': {'basemac': '44:D4:37:68:EC:2E',
+            'boardid': 'EG400R0',
+            'brcmver': '502030',
+            'bspver': '502030',
+            'cfever': '1.0.38-161.189-IOP1.5',
+            'cpu_per': 4,
+            'date': 'Sat Aug  2 14:20:09 2025',
+            'filesystem': 'UBIFS',
+            'firmware': 'EG400-X-GNX-4.3.6.190-R-240426_1729',
+            'hardware': 'EG400',
+            'kernel': '4.1.38',
+            'localtime': 1754137209,
+            'model': 'EG400X',
+            'name': 'Inteno',
+            'procs': 155,
+            'serialno': 'EG4024H211017231',
+            'socmod': '63139',
+            'socrev': 'b0',
+            'uptime': '10d 7h 35m 44s'}}
+"""
+
+
+@dataclass
+class IntenoInfoSystem:
+    """
+    A dataclass to hold the system information of the Inteno device.
+    """
+
+    basemac: str
+    boardid: str
+    brcmver: str
+    bspver: str
+    cfever: str
+    cpu_per: int
+    date: str  # Date in format "Sat Aug  2 14:20:09 2025"
+    filesystem: str
+    firmware: str
+    hardware: str
+    kernel: str
+    localtime: int  # Unix timestamp
+    model: str
+    name: str
+    procs: int
+    serialno: str
+    socmod: str
+    socrev: str
+    uptime: str
+
+
+@dataclass
+class IntenoInfo:
+    """
+    A dataclass to hold the information of the Inteno device.
+    It contains keys, memory, specs, and system information.
+    """
+
+    keys: IntenoInfoKeys
+    memoryKB: IntenoInfoMemory
+    specs: IntenoInfoSpecs
+    system: IntenoInfoSystem
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "IntenoInfo":
+        """
+        Create an IntenoInfo object from a dictionary.
+        The dictionary should contain the keys as defined in the dataclasses.
+        """
+        keys = IntenoInfoKeys(**data["keys"])
+        memory = IntenoInfoMemory(**data["memoryKB"])
+        specs = IntenoInfoSpecs(**data["specs"])
+        system = IntenoInfoSystem(**data["system"])
+        return IntenoInfo(keys=keys, memoryKB=memory, specs=specs, system=system)
 
 
 class Inteno:
@@ -299,6 +425,21 @@ class Inteno:
         devices: dict[str, dict] = await self._rcv_rpc()
         _LOGGER.debug("Received devices: %s", devices)
         devices_parsed = {
-            key: inteno_device_from_dict(value) for key, value in devices.items()
+            key: IntenoDevice.from_dict(value) for key, value in devices.items()
         }
         return devices_parsed
+
+    async def hardware_info(self) -> IntenoInfo:
+        """
+        Get hardware information of the Inteno device.
+        Returns a dictionary containing hardware information.
+        """
+        await self.ensure_logged_in()
+        _LOGGER.debug("Getting hardware info from Inteno")
+        await self._send_rpc(
+            "call",
+            params=[self._session_token, "router.system", "info", {}],
+        )
+        hardware_info: Dict[str, Any] = await self._rcv_rpc()
+        _LOGGER.debug("Received hardware info: %s", hardware_info)
+        return IntenoInfo.from_dict(hardware_info)
